@@ -18,6 +18,7 @@ import (
 
 	"github.com/cblomart/vsphere-graphite/backend"
 	"github.com/cblomart/vsphere-graphite/config"
+	"github.com/cblomart/vsphere-graphite/utils"
 	"github.com/cblomart/vsphere-graphite/vsphere"
 
 	"github.com/takama/daemon"
@@ -254,6 +255,7 @@ func ClearBuffer(buffer []*backend.Point) {
 func init() {
 	stdlog = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	errlog = log.New(os.Stderr, "", log.Ldate|log.Ltime)
+	utils.Init(stdlog, errlog)
 }
 
 func main() {
