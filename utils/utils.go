@@ -14,6 +14,12 @@ import (
 
 var stdlog, errlog *log.Logger
 
+// Init : set up loggers
+func Init(standardLogs *log.Logger, errorLogs *log.Logger) {
+	stdlog = standardLogs
+	errlog = errorLogs
+}
+
 // Min : get the minimum of values
 func Min(n ...int64) int64 {
 	var min int64 = -1
