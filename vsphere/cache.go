@@ -112,8 +112,8 @@ func (c *Cache) GetStrings(vcenter, section, i string) *[]string {
 
 // GetInt32 get an int32 from cache
 func (c *Cache) GetInt32(vcenter, section, i string) *int32 {
-	if v, ok := c.get(vcenter, section, i).(*int32); ok {
-		return v
+	if v, ok := c.get(vcenter, section, i).(int32); ok {
+		return &v
 	}
 	return nil
 }
