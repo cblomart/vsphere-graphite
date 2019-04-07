@@ -1,11 +1,11 @@
-version: 3
+version: '3'
 
 services:
   vcenter:
     image: cblomart/vcsim
 
   vsphere-graphite:
-    image: cblomart/vsphere-graphite:16a6c7a 
+    image: cblomart/vsphere-graphite:788a410 
     environment:
       - VCENTER_VCSIM=user:pass@vcenter:8989
       - BACKEND_TYPE=graphite
