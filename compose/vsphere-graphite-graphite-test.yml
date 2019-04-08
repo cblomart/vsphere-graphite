@@ -3,6 +3,21 @@ version: '3'
 services:
   vcenter:
     image: cblomart/vcsim
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+
+  graphite:
+    image: graphiteapp/graphite-statsd
+    ports:
+      - "80"
+    deploy:
+      restart_policy:
+        delay: 5s
+        max_attempts: 3
+        window: 30s
 
   vsphere-graphite:
     image: cblomart/vsphere-graphite:788a410 
@@ -11,8 +26,11 @@ services:
       - BACKEND_TYPE=graphite
       - BACKEND_HOSTNAME=graphite
       - BACKEND_PORT=2003
-
-  graphite:
-    image: graphiteapp/graphite-statsd
-    expose:
-      - 80
+    depends_on:
+      - vcenter
+      - graphite
+    deploy:
+      restart_policy:
+        delay: 10s
+        max_attempts: 3
+        window: 120s
