@@ -329,6 +329,7 @@ func (service *Service) Manage() (string, error) {
 				debug.FreeOSMemory()
 				runtime.ReadMemStats(&memstats)
 				log.Printf("Memory usage : sys=%s alloc=%s\n", bytefmt.ByteSize(memstats.Sys), bytefmt.ByteSize(memstats.Alloc))
+				log.Printf("GoRoutines : %d", runtime.NumGoroutine())
 				if conf.MEMProfiling {
 					f, err := os.OpenFile("/tmp/vsphere-graphite-mem.pb.gz", os.O_RDWR|os.O_CREATE, 0600) // nolin.vetshaddow
 					if err != nil {
