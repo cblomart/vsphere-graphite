@@ -512,6 +512,8 @@ func (vcenter *VCenter) Query(interval int, domain string, replacepoint bool, pr
 	// make each queries in separate functions
 	// use a wait group to avoid exiting if all threads are not finished
 
+	log.Printf("vcenter %s: execute %d batched queries", vcName, len(batchqueries))
+
 	// create the wait group and declare the amount of threads
 	var querieswaitgroup sync.WaitGroup
 	querieswaitgroup.Add(len(batchqueries))
@@ -524,6 +526,8 @@ func (vcenter *VCenter) Query(interval int, domain string, replacepoint bool, pr
 	//wait fot the waitgroup
 	querieswaitgroup.Wait()
 
+	log.Printf("vcenter %s: executed %d batched queries", vcName, len(batchqueries))
+
 }
 
 // ExecuteQueries : Query a vcenter for performances
@@ -535,9 +539,6 @@ func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cac
 
 	// Query the performances
 	perfres, err := methods.QueryPerf(ctx, r, queryperf)
-
-	// Tell the waitgroup that we are done
-	wg.Done()
 
 	// Check the result
 	if err != nil {
@@ -556,6 +557,10 @@ func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cac
 	// create an array to store vm to folder path resolution
 	cache.Purge(vcName, "folders")
 
+	// create the wait group
+	var processwaitgroup sync.WaitGroup
+	processwaitgroup.Add(returncount)
+
 	// Parse results
 	// no need to wait here because this is only processing (no connection to vcenter needed)
 	totalvms := 0
@@ -568,7 +573,7 @@ func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cac
 		case "HostSystem":
 			totalhosts++
 		}
-		go ProcessMetric(cache, pem, timeStamp, replacepoint, domain, vcName, channel)
+		go ProcessMetric(cache, pem, timeStamp, replacepoint, domain, vcName, channel, &processwaitgroup)
 	}
 	// log total object refrenced
 	log.Printf("vcenter %s thread %d: %d objects (%d vm and %d hosts)", vcName, id, totalhosts+totalvms, totalvms, totalhosts)
@@ -600,10 +605,18 @@ func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cac
 			log.Printf("vcenter %s thread %d: missing metrics for %s", vcName, id, missmorefs[i])
 		}
 	}
+
+        // wait for the waitgroup
+        processwaitgroup.Wait()
+
+	// Tell the waitgroup that we are done
+	wg.Done()
+
+	log.Printf("vcenter %s thread %d: recieved %d metrics\n", vcName, id, returncount)
 }
 
 // ProcessMetric : Process Metric to metric queue
-func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, replacepoint bool, domain string, vcName string, channel *chan backend.Point) {
+func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, replacepoint bool, domain string, vcName string, channel *chan backend.Point, wg *sync.WaitGroup) {
 	// name checks the name of the object
 	name := cache.FindString(vcName, "names", pem.Entity.Value)
 	name = strings.ToLower(strings.Replace(name, domain, "", -1))
@@ -759,4 +772,5 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		point.Value = value
 		*channel <- point
 	}
+        wg.Done()
 }
