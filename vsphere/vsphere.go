@@ -533,6 +533,13 @@ func (vcenter *VCenter) Query(interval int, domain string, replacepoint bool, pr
 // ExecuteQueries : Query a vcenter for performances
 func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cache, queryperf *types.QueryPerf, timeStamp int64, replacepoint bool, domain string, vcName string, channel *chan backend.Point, wg *sync.WaitGroup) {
 
+	// Tell the waitgroup that we are done
+	defer func() {
+		if wg != nil {
+			wg.Done()
+		}
+	}()
+
 	// Starting informations
 	requestedcount := len(queryperf.QuerySpec)
 	log.Printf("vcenter %s thread %d: requesting %d metrics\n", vcName, id, requestedcount)
@@ -606,17 +613,20 @@ func ExecuteQueries(ctx context.Context, id int, r soap.RoundTripper, cache *Cac
 		}
 	}
 
-        // wait for the waitgroup
-        processwaitgroup.Wait()
-
-	// Tell the waitgroup that we are done
-	wg.Done()
+	// wait for the waitgroup
+	processwaitgroup.Wait()
 
 	log.Printf("vcenter %s thread %d: recieved %d metrics\n", vcName, id, returncount)
 }
 
 // ProcessMetric : Process Metric to metric queue
 func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, replacepoint bool, domain string, vcName string, channel *chan backend.Point, wg *sync.WaitGroup) {
+	// Tell the waitgroup that we are done
+	defer func() {
+		if wg != nil {
+			wg.Done()
+		}
+	}()
 	// name checks the name of the object
 	name := cache.FindString(vcName, "names", pem.Entity.Value)
 	name = strings.ToLower(strings.Replace(name, domain, "", -1))
@@ -772,5 +782,4 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		point.Value = value
 		*channel <- point
 	}
-        wg.Done()
 }
