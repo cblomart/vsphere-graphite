@@ -220,8 +220,6 @@ steps:
     image: cblomart/gobasebuild
     commands:
     - make upx-windows-amd64
-    when:
-      event: [ tag ]
   - pack:
     name: pack
     image: cblomart/gobasebuild
@@ -229,8 +227,6 @@ steps:
     - make dist-windows-amd64
     - cp /tmp/vsphere-graphite_*.tgz releases/
     - for f in $(ls -1 releases/*.tgz); do md5sum $f | sed "s#/.*/##g" > "$f.md5"; sha256sum $f | sed "s#/.*/##g" > "$f.sha256"; done
-    when:
-      event: [ tag ]
   - release:
     name: release
     image: plugins/github-release
@@ -241,11 +237,9 @@ steps:
         - releases/*.tgz
         - releases/*.md5
         - releases/*.sha256
-    when:
-      event: [ tag ]
 
-#trigger:
-#  event: [ tag ]
+trigger:
+  event: [ tag ]
 
 depends_on:
   - checkups
