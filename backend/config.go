@@ -6,7 +6,7 @@ import (
 
 	influxclient "github.com/influxdata/influxdb1-client/v2"
 	graphite "github.com/marpaia/graphite-golang"
-	"github.com/olivere/elastic"
+	elastic "gopkg.in/olivere/elastic.v5"
 )
 
 // Config : storage backend
