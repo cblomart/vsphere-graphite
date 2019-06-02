@@ -42,7 +42,7 @@ endif
 ifndef GITVERSION
 	go get -u github.com/cblomart/git-version
 endif
-	#go get -u golang.org/x/sys/windows/registry
+	GOOS=windows go get -u golang.org/x/sys/windows/registry
 	go get -u github.com/takama/daemon
 	go get -u golang.org/x/net/context
 	go get -u github.com/vmware/govmomi
