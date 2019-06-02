@@ -168,17 +168,18 @@ func (service *Service) Manage() (string, error) {
 
 	//force vcenter values to environment variables if present
 	envvcenters := []*vsphere.VCenter{}
+	vcenterreg := regexp.MustCompile(vcenterdefreg)
 	for _, e := range os.Environ() {
 		// check if a vcenter definition
 		if strings.HasPrefix(e, "VCENTER_") {
-			m, err := regexp.MatchString(vcenterdefreg, e)
-			if err != nil || !m {
+			m := vcenterreg.MatchString(e)
+			if !m {
 				log.Printf("cannot parse vcenter: %s\n", e)
 				continue
 			}
 			// slitp key values
 			kv := strings.Split(e, "=")
-			vcenterdef := strings.Join(kv[1:len(kv)], "=")
+			vcenterdef := strings.Join(kv[1:], "=")
 			// split authentication and server
 			authserver := strings.Split(vcenterdef, "@")
 			auth := strings.Join(authserver[:len(authserver)-1], "@")
@@ -186,7 +187,7 @@ func (service *Service) Manage() (string, error) {
 			// split username and password
 			userpass := strings.Split(auth, ":")
 			username := userpass[0]
-			password := strings.Join(userpass[1:len(userpass)], ":")
+			password := strings.Join(userpass[1:], ":")
 			vcenter := vsphere.VCenter{
 				Username: username,
 				Password: password,
