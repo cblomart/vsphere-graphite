@@ -51,7 +51,8 @@ endif
 	go get -u github.com/pquerna/ffjson/fflib/v1
 	go get -u code.cloudfoundry.org/bytefmt
 	go get -u github.com/pquerna/ffjson
-	go get -u github.com/olivere/elastic
+	#go get -u github.com/olivere/elastic
+	go get -u gopkg.in/olivere/elastic.v5
 	go get -u github.com/prometheus/client_golang/prometheus
 	go get -u github.com/fluent/fluent-logger-golang/fluent	
 	go get -u github.com/valyala/fasthttp

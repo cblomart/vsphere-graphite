@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/olivere/elastic"
+	elastic "gopkg.in/olivere/elastic.v5"
 )
 
 // CreateIndexIfNotExists not exists creates Elasticsearch Index if Not Exists
@@ -44,8 +44,8 @@ func CreateIndexIfNotExists(e *elastic.Client, index string) error {
 			continue
 		}
 		tagfields := strings.Split(tag, ",")
-			mapping["mappings"].(MapStr)["doc"].(MapStr)["properties"].(MapStr)[field.Name] = MapStr{}
-			for _, tagfield := range tagfields {
+		mapping["mappings"].(MapStr)["doc"].(MapStr)["properties"].(MapStr)[field.Name] = MapStr{}
+		for _, tagfield := range tagfields {
 			tagfieldValues := strings.Split(tagfield, ":")
 			mapping["mappings"].(MapStr)["doc"].(MapStr)["properties"].(MapStr)[field.Name].(MapStr)[tagfieldValues[0]] = tagfieldValues[1]
 		}
@@ -61,6 +61,6 @@ func CreateIndexIfNotExists(e *elastic.Client, index string) error {
 		log.Printf("elastic: error creating elastic index %s - %s\n", index, err)
 		return err
 	}
-	log.Printf("elastic: index %s created\n",index)
+	log.Printf("elastic: index %s created\n", index)
 	return nil
 }
