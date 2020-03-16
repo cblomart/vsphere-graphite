@@ -27,6 +27,7 @@ import (
 // Channels are use for unscheduled backend
 type Channels struct {
 	Request *chan Point
+	Target  string
 }
 
 // Backend Interface
@@ -146,12 +147,14 @@ func (backend *Config) Init() (*chan Channels, error) {
 		//Initialize Prometheus client
 		log.Printf("backend %s: initializing\n", backendType)
 		registry := prometheus.NewRegistry()
-		err := registry.Register(backend)
+		err := registry.Register(&PrometheusBackend{Config: backend})
 		if err != nil {
 			log.Printf("backend %s: error creating registry - %s\n", backendType, err)
 			return queries, err
 		}
 		http.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{ErrorHandling: promhttp.ContinueOnError}))
+		http.HandleFunc("/scrape", backend.scrapeHandler)
+		backend.promCollectors = make(map[string]*PrometheusBackend)
 		go func() error {
 			address := ""
 			if len(backend.Hostname) > 0 {
@@ -215,6 +218,13 @@ func (backend *Config) Init() (*chan Channels, error) {
 		log.Printf("backend %s: unknown backend\n", backendType)
 		return queries, errors.New("backend " + backendType + " unknown.")
 	}
+}
+
+// InitPrometheus : Init Multiple channels for prometheus
+func (backend *Config) InitPrometheus(vcenter string) error {
+	backend.promCollectors[vcenter] = &PrometheusBackend{Config: backend, Target: vcenter}
+
+	return nil
 }
 
 // Clean : take actions on backend when cycle finished
@@ -447,4 +457,28 @@ func (backend *Config) HasMetadata() bool {
 	default:
 		return true
 	}
+}
+
+func (backend *Config) scrapeHandler(w http.ResponseWriter, r *http.Request) {
+	target := r.URL.Query().Get("target")
+	if target == "" {
+		http.Error(w, "'target' parameter must be specified", 400)
+		return
+	}
+
+	if _, found := backend.promCollectors[target]; !found {
+		http.Error(w, "VCenter not found", 400)
+		return
+	}
+
+	log.Printf("Setting target to %s\n", target)
+	registry := prometheus.NewRegistry()
+	err := registry.Register(backend.promCollectors[target])
+	if err != nil {
+		http.Error(w, "error creating registry ", 400)
+		return
+	}
+
+	h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{ErrorHandling: promhttp.ContinueOnError})
+	h.ServeHTTP(w, r)
 }

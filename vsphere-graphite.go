@@ -242,6 +242,15 @@ func (service *Service) Manage() (string, error) {
 	}
 	defer conf.Backend.Disconnect()
 
+	if conf.Backend.Type == "prometheus" {
+		for _, vcenter := range conf.VCenters {
+			err := conf.Backend.InitPrometheus(vcenter.Hostname)
+			if err != nil {
+				return "Could not initialize backend", err
+			}
+		}
+	}
+
 	//check properties in function of backend support of metadata
 	if !conf.Backend.HasMetadata() {
 		properties := []string{}
@@ -323,12 +332,22 @@ func (service *Service) Manage() (string, error) {
 				// wait group for non scheduled metric retrival
 				var wg sync.WaitGroup
 
-				log.Println("adhoc metric retrieval")
-				wg.Add(len(conf.VCenters))
-				for _, vcenter := range conf.VCenters {
-					go queryVCenter(*vcenter, conf, request.Request, &wg)
+				log.Printf("adhoc metric retrieval for %s\n", request.Target)
+				if request.Target != "" {
+					for _, vcenter := range conf.VCenters {
+						if request.Target == vcenter.Hostname {
+							wg.Add(1)
+							go queryVCenter(*vcenter, conf, request.Request, &wg)
+						}
+					}
+				} else {
+					wg.Add(len(conf.VCenters))
+					for _, vcenter := range conf.VCenters {
+						go queryVCenter(*vcenter, conf, request.Request, &wg)
+					}
 				}
 				wg.Wait()
+				log.Printf("Completed adhoc metric retrieval for %s\n", request.Target)
 				close(*request.Request)
 				cleanup <- true
 			}()
