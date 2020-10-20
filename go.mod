@@ -12,11 +12,11 @@ require (
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
-	github.com/prometheus/client_golang v1.7.1
+	github.com/prometheus/client_golang v1.8.0
 	github.com/takama/daemon v0.12.0
 	github.com/tinylib/msgp v1.1.2 // indirect
 	github.com/valyala/fasthttp v1.16.0
 	github.com/vmware/govmomi v0.23.1
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	gopkg.in/olivere/elastic.v5 v5.0.86
 )
