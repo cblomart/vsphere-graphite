@@ -366,7 +366,12 @@ func (service *Service) Manage() (string, error) {
 					if err != nil {
 						log.Fatal("could not create Mem profile: ", err)
 					}
-					defer f.Close()
+					defer func() {
+						e := f.Close()
+						if err == nil {
+							err = e
+						}
+					}()
 					log.Println("Will write mem profiling to: ", f.Name())
 					if err := pprof.WriteHeapProfile(f); err != nil {
 						log.Fatal("could not write Mem profile: ", err)
