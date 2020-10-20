@@ -399,7 +399,7 @@ func ClearBuffer(buffer []*backend.Point) {
 
 func main() {
 	log.Printf("Version information: %s - %s@%s (%s)", gitTag, gitShortCommit, gitBranch, gitStatus)
-	srv, err := daemon.New(name, description, dependencies...)
+	srv, err := daemon.New(name, description, daemon.SystemDaemon, dependencies...)
 	if err != nil {
 		log.Println("Error: ", err)
 		os.Exit(1)
