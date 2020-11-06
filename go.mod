@@ -15,8 +15,8 @@ require (
 	github.com/prometheus/client_golang v1.8.0
 	github.com/takama/daemon v0.12.0
 	github.com/tinylib/msgp v1.1.2 // indirect
-	github.com/valyala/fasthttp v1.16.0
+	github.com/valyala/fasthttp v1.17.0
 	github.com/vmware/govmomi v0.23.1
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0
 	gopkg.in/olivere/elastic.v5 v5.0.86
 )
