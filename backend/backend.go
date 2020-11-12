@@ -271,7 +271,9 @@ func (backend *Config) Disconnect() {
 	case Kafka:
 		// Disconnect from Kafka
 		log.Println("Disconnect from Kafka")
-		backend.kafka.Close()
+		if err := backend.kafka.Close(); err != nil {
+			log.Fatal("failed to close kafka writer:", err)
+		}
 	default:
 		log.Println("Backend " + backendType + " unknown.")
 	}
