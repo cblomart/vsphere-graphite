@@ -13,6 +13,7 @@ Compatible backends:
 * [fluentd](https://www.fluentd.org/)
 * [elasticsearch](https://www.elastic.co/)
 * [graphite](https://graphiteapp.org/)
+* [kafka](https://kafka.apache.org)
 
 ## Example dashboard
 
@@ -85,7 +86,7 @@ This allows to use a generic config in a container image and set the backend by 
 
   Type of backend to use.
 
-  Currently "graphite", "influxdb", "thinfluxdb" (embeded influx client), "elastic", "prometheus", "thinprometheus" (embedded prometheus) and "fluentd"
+  Currently "graphite", "influxdb", "thinfluxdb" (embeded influx client), "elastic", "prometheus", "thinprometheus" (embedded prometheus) "fluentd" and "kafka"
 
 * Hostname (CONFIG_HOSTNAME):
 
@@ -127,7 +128,7 @@ This allows to use a generic config in a container image and set the backend by 
 
   Database to use in the backend.
 
-  Only supported by "influx", "thininflux" and "elastic".
+  Only supported by "influx", "thininflux", "elastic" and "kafka" (kafka topic name)
 
 * NoArray (CONFIG_NOARRAY):
 

@@ -6,6 +6,7 @@ import (
 
 	influxclient "github.com/influxdata/influxdb1-client/v2"
 	graphite "github.com/marpaia/graphite-golang"
+	kafka "github.com/segmentio/kafka-go"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
@@ -26,4 +27,5 @@ type Config struct {
 	thininfluxdb *thininfluxclient.ThinInfluxClient
 	elastic      *elastic.Client
 	fluent       *fluent.Fluent
+	kafka        *kafka.Writer
 }

@@ -2,16 +2,15 @@ package backend
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/cblomart/vsphere-graphite/utils"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/cblomart/vsphere-graphite/utils"
-
-	"net/http"
 
 	"github.com/cblomart/vsphere-graphite/backend/thininfluxclient"
 	"github.com/fluent/fluent-logger-golang/fluent"
@@ -20,6 +19,8 @@ import (
 	graphite "github.com/marpaia/graphite-golang"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	kafka "github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/gzip"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
@@ -55,6 +56,8 @@ const (
 	Fluentd = "fluentd"
 	// ThinPrometheus name of the thin prometheus backend
 	ThinPrometheus = "thinprometheus"
+	// Kafka name of the kafka backend
+	Kafka = "kafka"
 )
 
 var (
@@ -193,6 +196,21 @@ func (backend *Config) Init() (*chan Channels, error) {
 			}
 		}()
 		return queries, nil
+	case Kafka:
+		//Initialize Kafka
+		log.Printf("backend %s: initializing\n", backendType)
+		kafkaclt := kafka.NewWriter(kafka.WriterConfig{
+			Brokers:          []string{backend.Hostname + ":" + strconv.Itoa(backend.Port)},
+			Topic:            backend.Database,
+			Balancer:         &kafka.LeastBytes{},
+			CompressionCodec: gzip.NewCompressionCodec(),
+			RequiredAcks:     1, //default -1
+			//BatchTimeout: 1 * time.Millisecond, //default 1 * time.Second,
+		})
+		log.Printf("backend %s: broker:%s:%d topic:%s\n", backendType, backend.Hostname, backend.Port, backend.Database)
+
+		backend.kafka = kafkaclt
+		return queries, nil
 	default:
 		log.Printf("backend %s: unknown backend\n", backendType)
 		return queries, errors.New("backend " + backendType + " unknown.")
@@ -250,6 +268,12 @@ func (backend *Config) Disconnect() {
 	case ThinPrometheus:
 		// Stop exporting Prometheus metrics
 		log.Println("Disconnect ThinPrometheus exporter")
+	case Kafka:
+		// Disconnect from Kafka
+		log.Println("Disconnect from Kafka")
+		if err := backend.kafka.Close(); err != nil {
+			log.Fatal("failed to close kafka writer:", err)
+		}
 	default:
 		log.Println("Backend " + backendType + " unknown.")
 	}
@@ -382,6 +406,19 @@ func (backend *Config) SendMetrics(metrics []*Point, cleanup bool) {
 		}
 	case ThinPrometheus:
 		// Thin Prometheus doesn't need to send metrics
+	case Kafka:
+		// Format metrics into json and write to kafka
+		msg, _ := json.Marshal(metrics)
+		err := backend.kafka.WriteMessages(context.Background(),
+			kafka.Message{Value: []byte(msg)},
+		)
+		if err != nil {
+			log.Printf("backend %s: failed to post point - %s\n", backendType, err)
+		}
+
+		//Log Kafka Writer Stats
+		log.Println("kafka stats:", backend.kafka.Stats())
+
 	default:
 		log.Printf("backend %s: unknown", backendType)
 	}
