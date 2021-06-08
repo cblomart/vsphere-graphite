@@ -12,7 +12,7 @@ require (
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
-	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/client_golang v1.11.0
 	github.com/takama/daemon v0.12.0
 	github.com/tinylib/msgp v1.1.2 // indirect
 	github.com/valyala/fasthttp v1.19.0
