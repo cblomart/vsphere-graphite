@@ -78,6 +78,8 @@ func (c *Cache) Add(vcenter, section, i string, v interface{}) {
 		c.add(vcenter, section, i, &typed)
 	case types.HostSystemPowerState:
 		c.add(vcenter, section, i, &typed)
+	case types.DVSTrafficShapingPolicy:
+		c.add(vcenter, section, i, &typed)
 	default:
 		log.Printf("cache %s/%s: unhandled type %T for %s\n", vcenter, section, v, i)
 	}
@@ -228,6 +230,14 @@ func (c *Cache) GetPowerState(vcenter, section, i string) *string {
 		}
 		value = (string)(*state)
 		return &value
+	}
+	return nil
+}
+
+// GetNetworkShapingInfo gets the shaping data from a DistributedVirtualPortGroup
+func (c *Cache) GetNetworkShapingInfo(vcenter, section, i string) *types.DVSTrafficShapingPolicy {
+	if v, ok := c.get(vcenter, section, i).(*types.DVSTrafficShapingPolicy); ok {
+		return v
 	}
 	return nil
 }

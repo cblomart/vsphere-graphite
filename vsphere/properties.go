@@ -1,7 +1,7 @@
 package vsphere
 
 // MetricProperties are properties that are sent as metrics
-var MetricProperties = []string{"numcpu", "memorysizemb", "disks"}
+var MetricProperties = []string{"numcpu", "memorysizemb", "disks", "shaping_input", "shaping_output"}
 
 // Properties describes know relation to properties to related objects and properties
 var Properties = map[string]map[string][]string{
@@ -20,7 +20,7 @@ var Properties = map[string]map[string][]string{
 		"ClusterComputeResource": {"name"},
 	},
 	"network": {
-		"DistributedVirtualPortgroup": {"name"},
+		"DistributedVirtualPortgroup": {"name", "config.defaultPortConfig.inShapingPolicy", "config.defaultPortConfig.outShapingPolicy"},
 		"Network":                     {"name"},
 		"VirtualMachine":              {"network"},
 	},
@@ -61,4 +61,6 @@ var PropertiesSections = map[string]string{
 	"guest.disk":                  "disks",
 	"runtime.connectionState":     "connections",
 	"runtime.powerState":          "powers",
+	"config.defaultPortConfig.inShapingPolicy":  "shaping_inputs",
+	"config.defaultPortConfig.outShapingPolicy": "shaping_outputs",
 }

@@ -721,7 +721,7 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		*channel <- point
 	}
 	// send numcpu infos
-	memorysizemb := cache.GetInt32(vcName, "memories", pem.Entity.Value)
+	memorysizemb := cache.GetInt32(vcName, "mems", pem.Entity.Value)
 	if memorysizemb != nil {
 		point.Group = "mem"
 		point.Counter = "sizemb"
@@ -729,6 +729,36 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		point.Rollup = "latest"
 		point.Value = int64(*memorysizemb)
 		*channel <- point
+	}
+	networks := cache.GetMorefs(vcName, "networks", pem.Entity.Value)
+	if networks != nil {
+		for _, netRef := range *networks {
+			// send shaping infos
+			shaping_input := cache.GetNetworkShapingInfo(vcName, "shaping_inputs", netRef.Value)
+			if shaping_input != nil {
+				netBack := point.Network
+				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
+				point.Group = "net"
+				point.Counter = "shaping_input"
+				point.Instance = ""
+				point.Rollup = "latest"
+				point.Value = int64(shaping_input.AverageBandwidth.Value)
+				*channel <- point
+				point.Network = netBack
+			}
+			shaping_output := cache.GetNetworkShapingInfo(vcName, "shaping_outputs", netRef.Value)
+			if shaping_output != nil {
+				netBack := point.Network
+				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
+				point.Group = "net"
+				point.Counter = "shaping_output"
+				point.Instance = ""
+				point.Rollup = "latest"
+				point.Value = int64(shaping_output.AverageBandwidth.Value)
+				*channel <- point
+				point.Network = netBack
+			}
+		}
 	}
 	for _, baseserie := range pem.Value {
 		serie := baseserie.(*types.PerfMetricIntSeries)
