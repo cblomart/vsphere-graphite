@@ -22,7 +22,7 @@ var Properties = map[string]map[string][]string{
 	"network": {
 		"DistributedVirtualPortgroup": {"name", "config.defaultPortConfig.inShapingPolicy", "config.defaultPortConfig.outShapingPolicy"},
 		"Network":                     {"name"},
-		"VirtualMachine":              {"network"},
+		"VirtualMachine":              {"network", "config.hardware.device"},
 	},
 	"resourcepool": {
 		"ResourcePool": {"name", "parent", "vm"},
@@ -63,4 +63,5 @@ var PropertiesSections = map[string]string{
 	"runtime.powerState":          "powers",
 	"config.defaultPortConfig.inShapingPolicy":  "shaping_inputs",
 	"config.defaultPortConfig.outShapingPolicy": "shaping_outputs",
+	"config.hardware.device":                    "devices",
 }

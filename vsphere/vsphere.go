@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -767,12 +768,35 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		metricparts := strings.Split(metricName, ".")
 		point.Group, point.Counter, point.Rollup = metricparts[0], metricparts[1], metricparts[2]
 		point.Instance = serie.Id.Instance
+		point.Network = network
 		if len(point.Instance) > 0 && point.Group == "datastore" {
 			newDatastore := cache.GetString(vcName, "datastoreids", point.Instance)
 			if newDatastore != nil {
 				point.Datastore = []string{*newDatastore}
 			} else {
 				point.Datastore = []string{}
+			}
+		}
+		// Only show relevant networks according to the instance
+		if len(point.Instance) > 0 && point.Group == "net" {
+			if instanceValue, err := strconv.Atoi(point.Instance); err == nil {
+				devs := cache.GetDevices(vcName, "devices", pem.Entity.Value)
+				if devs != nil {
+					for _, dev := range devs.VirtualDevice {
+						vdev := dev.GetVirtualDevice()
+						if vdev.Key == int32(instanceValue) {
+							if nic, ok := dev.(types.BaseVirtualEthernetCard); ok {
+								backing := nic.GetVirtualEthernetCard().Backing
+								switch b := backing.(type) {
+								case *types.VirtualEthernetCardNetworkBackingInfo:
+									point.Network = []string{cache.FindString(vcName, "names", b.Network.Value)}
+								case *types.VirtualEthernetCardDistributedVirtualPortBackingInfo:
+									point.Network = []string{cache.FindString(vcName, "names", b.Port.PortgroupKey)}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		var value int64 = -1

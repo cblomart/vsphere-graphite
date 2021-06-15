@@ -80,6 +80,8 @@ func (c *Cache) Add(vcenter, section, i string, v interface{}) {
 		c.add(vcenter, section, i, &typed)
 	case types.DVSTrafficShapingPolicy:
 		c.add(vcenter, section, i, &typed)
+	case types.ArrayOfVirtualDevice:
+		c.add(vcenter, section, i, &typed)
 	default:
 		log.Printf("cache %s/%s: unhandled type %T for %s\n", vcenter, section, v, i)
 	}
@@ -237,6 +239,14 @@ func (c *Cache) GetPowerState(vcenter, section, i string) *string {
 // GetNetworkShapingInfo gets the shaping data from a DistributedVirtualPortGroup
 func (c *Cache) GetNetworkShapingInfo(vcenter, section, i string) *types.DVSTrafficShapingPolicy {
 	if v, ok := c.get(vcenter, section, i).(*types.DVSTrafficShapingPolicy); ok {
+		return v
+	}
+	return nil
+}
+
+// GetDevices gets the devices from a VM
+func (c *Cache) GetDevices(vcenter, section, i string) *types.ArrayOfVirtualDevice {
+	if v, ok := c.get(vcenter, section, i).(*types.ArrayOfVirtualDevice); ok {
 		return v
 	}
 	return nil
