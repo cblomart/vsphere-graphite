@@ -1,0 +1,16 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: github.com/vmware/govmomi
+    versions:
+    - 0.24.1
+  - dependency-name: github.com/valyala/fasthttp
+    versions:
+    - 1.20.0
+    - 1.21.0
+    - 1.22.0
