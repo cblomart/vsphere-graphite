@@ -30,7 +30,7 @@ steps:
     image: cblomart/gobasebuild
     commands:
     - go version
-    - make godeps
+    - go mod download
     - go generate ./...
     - tags=$(git rev-parse --short HEAD)
     - if [ ! -z "$DRONE_TAG" ]; then tags="$tags,$DRONE_TAG,latest"; fi
