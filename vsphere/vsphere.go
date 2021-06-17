@@ -779,7 +779,7 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		}
 		// Only show relevant networks according to the instance
 		if len(point.Instance) > 0 && point.Group == "net" {
-			if instanceValue, err := strconv.Atoi(point.Instance); err == nil {
+			if instanceValue, err := strconv.ParseInt(point.Instance, 10, 32); err == nil {
 				devs := cache.GetDevices(vcName, "devices", pem.Entity.Value)
 				if devs != nil {
 					for _, dev := range devs.VirtualDevice {
