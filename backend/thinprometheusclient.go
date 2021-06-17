@@ -46,13 +46,22 @@ func (client *ThinPrometheusClient) ListenAndServe() error {
 }
 
 func requestHandler(ctx *fasthttp.RequestCtx) {
-	if string(ctx.Path()) != "/metrics" {
+	if string(ctx.Path()) != "/metrics" && string(ctx.Path()) != "/scrape" {
 		ctx.Error("Unsupported path", fasthttp.StatusNotFound)
 		return
 	}
+	target := ""
+	// id /scape a target should be added
+	if string(ctx.Path()) == "/scrape" {
+		target = string(ctx.QueryArgs().Peek("target"))
+		if target == "" {
+			ctx.Error("'target' parameter must be specified", fasthttp.StatusNotFound)
+			return
+		}
+	}
 	// prepare the channels for the request
 	request := make(chan Point, 100)
-	channels := Channels{Request: &request}
+	channels := Channels{Request: &request, Target: target}
 	// create a buffer to organise metrics per type
 	buffer := map[string][]string{}
 	log.Println("thinprom: sending query request")

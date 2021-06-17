@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -721,7 +722,7 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		*channel <- point
 	}
 	// send numcpu infos
-	memorysizemb := cache.GetInt32(vcName, "memories", pem.Entity.Value)
+	memorysizemb := cache.GetInt32(vcName, "mems", pem.Entity.Value)
 	if memorysizemb != nil {
 		point.Group = "mem"
 		point.Counter = "sizemb"
@@ -730,6 +731,36 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		point.Value = int64(*memorysizemb)
 		*channel <- point
 	}
+	networks := cache.GetMorefs(vcName, "networks", pem.Entity.Value)
+	if networks != nil {
+		for _, netRef := range *networks {
+			// send shaping infos
+			shaping_input := cache.GetNetworkShapingInfo(vcName, "shaping_inputs", netRef.Value)
+			if shaping_input != nil {
+				netBack := point.Network
+				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
+				point.Group = "net"
+				point.Counter = "shaping_input"
+				point.Instance = ""
+				point.Rollup = "latest"
+				point.Value = int64(shaping_input.AverageBandwidth.Value)
+				*channel <- point
+				point.Network = netBack
+			}
+			shaping_output := cache.GetNetworkShapingInfo(vcName, "shaping_outputs", netRef.Value)
+			if shaping_output != nil {
+				netBack := point.Network
+				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
+				point.Group = "net"
+				point.Counter = "shaping_output"
+				point.Instance = ""
+				point.Rollup = "latest"
+				point.Value = int64(shaping_output.AverageBandwidth.Value)
+				*channel <- point
+				point.Network = netBack
+			}
+		}
+	}
 	for _, baseserie := range pem.Value {
 		serie := baseserie.(*types.PerfMetricIntSeries)
 		metricName := cache.FindMetricName(vcName, serie.Id.CounterId)
@@ -737,12 +768,35 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		metricparts := strings.Split(metricName, ".")
 		point.Group, point.Counter, point.Rollup = metricparts[0], metricparts[1], metricparts[2]
 		point.Instance = serie.Id.Instance
+		point.Network = network
 		if len(point.Instance) > 0 && point.Group == "datastore" {
 			newDatastore := cache.GetString(vcName, "datastoreids", point.Instance)
 			if newDatastore != nil {
 				point.Datastore = []string{*newDatastore}
 			} else {
 				point.Datastore = []string{}
+			}
+		}
+		// Only show relevant networks according to the instance
+		if len(point.Instance) > 0 && point.Group == "net" {
+			if instanceValue, err := strconv.Atoi(point.Instance); err == nil {
+				devs := cache.GetDevices(vcName, "devices", pem.Entity.Value)
+				if devs != nil {
+					for _, dev := range devs.VirtualDevice {
+						vdev := dev.GetVirtualDevice()
+						if vdev.Key == int32(instanceValue) {
+							if nic, ok := dev.(types.BaseVirtualEthernetCard); ok {
+								backing := nic.GetVirtualEthernetCard().Backing
+								switch b := backing.(type) {
+								case *types.VirtualEthernetCardNetworkBackingInfo:
+									point.Network = []string{cache.FindString(vcName, "names", b.Network.Value)}
+								case *types.VirtualEthernetCardDistributedVirtualPortBackingInfo:
+									point.Network = []string{cache.FindString(vcName, "names", b.Port.PortgroupKey)}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		var value int64 = -1

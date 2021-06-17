@@ -12,20 +12,27 @@ import (
 
 // Config : storage backend
 type Config struct {
-	Hostname     string
-	ValueField   string
-	Database     string
-	Username     string
-	Password     string
-	Type         string
-	Prefix       string
-	Port         int
-	NoArray      bool
-	Encrypted    bool
-	carbon       *graphite.Graphite
-	influx       *influxclient.Client
-	thininfluxdb *thininfluxclient.ThinInfluxClient
-	elastic      *elastic.Client
-	fluent       *fluent.Fluent
-	kafka        *kafka.Writer
+	Hostname       string
+	ValueField     string
+	Database       string
+	Username       string
+	Password       string
+	Type           string
+	Prefix         string
+	Port           int
+	NoArray        bool
+	Encrypted      bool
+	carbon         *graphite.Graphite
+	influx         *influxclient.Client
+	thininfluxdb   *thininfluxclient.ThinInfluxClient
+	elastic        *elastic.Client
+	fluent         *fluent.Fluent
+	promCollectors map[string]*PrometheusBackend
+	kafka          *kafka.Writer
+}
+
+// PrometheusBackend : Extend prometheus.Collector
+type PrometheusBackend struct {
+	Config *Config
+	Target string
 }

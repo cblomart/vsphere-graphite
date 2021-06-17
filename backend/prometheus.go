@@ -9,17 +9,17 @@ import (
 )
 
 // Describe : Implementation of Prometheus Collector.Describe
-func (backend *Config) Describe(ch chan<- *prometheus.Desc) {
+func (backend *PrometheusBackend) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.NewGauge(prometheus.GaugeOpts{Name: "Dummy", Help: "Dummy"}).Describe(ch)
 }
 
 // Collect : Implementation of Prometheus Collector.Collect
-func (backend *Config) Collect(ch chan<- prometheus.Metric) {
+func (backend *PrometheusBackend) Collect(ch chan<- prometheus.Metric) {
 
-	log.Println("prometheus: requesting metrics")
+	log.Printf("prometheus: requesting metrics for %s\n", backend.Target)
 
-	request := make(chan Point, 100)
-	channels := Channels{Request: &request}
+	request := make(chan Point, 10000)
+	channels := Channels{Request: &request, Target: backend.Target}
 
 	select {
 	case *queries <- channels:
@@ -41,8 +41,8 @@ func (backend *Config) Collect(ch chan<- prometheus.Metric) {
 }
 
 //PrometheusSend sends a point to prometheus
-func (backend *Config) PrometheusSend(ch chan<- prometheus.Metric, point Point) {
-	tags := point.GetTags(backend.NoArray, ",")
+func (backend *PrometheusBackend) PrometheusSend(ch chan<- prometheus.Metric, point Point) {
+	tags := point.GetTags(backend.Config.NoArray, ",")
 	labelNames := make([]string, len(tags))
 	labelValues := make([]string, len(tags))
 	i := 0
@@ -51,7 +51,7 @@ func (backend *Config) PrometheusSend(ch chan<- prometheus.Metric, point Point) 
 		labelValues[i] = value
 		i++
 	}
-	key := fmt.Sprintf("%s_%s_%s_%s", backend.Prefix, point.Group, point.Counter, point.Rollup)
+	key := fmt.Sprintf("%s_%s_%s_%s", backend.Config.Prefix, point.Group, point.Counter, point.Rollup)
 	desc := prometheus.NewDesc(key, "vSphere collected metric", labelNames, nil)
 	metric, err := prometheus.NewConstMetric(desc, prometheus.GaugeValue, float64(point.Value), labelValues...)
 	if err != nil {
