@@ -722,7 +722,7 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 		*channel <- point
 	}
 	// send numcpu infos
-	memorysizemb := cache.GetInt32(vcName, "mems", pem.Entity.Value)
+	memorysizemb := cache.GetInt32(vcName, "memories", pem.Entity.Value)
 	if memorysizemb != nil {
 		point.Group = "mem"
 		point.Counter = "sizemb"
