@@ -31,7 +31,7 @@ steps:
     commands:
     - go version
     - go mod download
-    - go get github.com/pquerna/ffjson
+    - go install github.com/pquerna/ffjson@latest
     - go generate ./...
     - tags=$(git rev-parse --short HEAD)
     - if [ ! -z "$DRONE_TAG" ]; then tags="$tags,$DRONE_TAG,latest"; fi
