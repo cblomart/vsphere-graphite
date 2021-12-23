@@ -5,7 +5,7 @@ go 1.14
 require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20200131002437-cf55d5288a48
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
-	github.com/fluent/fluent-logger-golang v1.6.1
+	github.com/fluent/fluent-logger-golang v1.9.0
 	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
 	github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1
 	github.com/onsi/ginkgo v1.12.0 // indirect
