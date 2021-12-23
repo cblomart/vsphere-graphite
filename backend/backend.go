@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cblomart/vsphere-graphite/utils"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cblomart/vsphere-graphite/utils"
 
 	"github.com/cblomart/vsphere-graphite/backend/thininfluxclient"
 	"github.com/fluent/fluent-logger-golang/fluent"
@@ -465,6 +466,9 @@ func (backend *Config) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "'target' parameter must be specified", 400)
 		return
 	}
+	// sanitize target
+	target = strings.Replace(target, "\n", "", -1)
+	target = strings.Replace(target, "\r", "", -1)
 
 	if _, found := backend.promCollectors[target]; !found {
 		http.Error(w, "VCenter not found", 400)
