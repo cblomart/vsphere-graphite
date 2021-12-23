@@ -735,27 +735,27 @@ func ProcessMetric(cache *Cache, pem *types.PerfEntityMetric, timeStamp int64, r
 	if networks != nil {
 		for _, netRef := range *networks {
 			// send shaping infos
-			shaping_input := cache.GetNetworkShapingInfo(vcName, "shaping_inputs", netRef.Value)
-			if shaping_input != nil {
+			shapingInput := cache.GetNetworkShapingInfo(vcName, "shaping_inputs", netRef.Value)
+			if shapingInput != nil {
 				netBack := point.Network
 				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
 				point.Group = "net"
 				point.Counter = "shaping_input"
 				point.Instance = ""
 				point.Rollup = "latest"
-				point.Value = int64(shaping_input.AverageBandwidth.Value)
+				point.Value = int64(shapingInput.AverageBandwidth.Value)
 				*channel <- point
 				point.Network = netBack
 			}
-			shaping_output := cache.GetNetworkShapingInfo(vcName, "shaping_outputs", netRef.Value)
-			if shaping_output != nil {
+			shapingOutput := cache.GetNetworkShapingInfo(vcName, "shaping_outputs", netRef.Value)
+			if shapingOutput != nil {
 				netBack := point.Network
 				point.Network = []string{cache.FindString(vcName, "names", netRef.Value)}
 				point.Group = "net"
 				point.Counter = "shaping_output"
 				point.Instance = ""
 				point.Rollup = "latest"
-				point.Value = int64(shaping_output.AverageBandwidth.Value)
+				point.Value = int64(shapingOutput.AverageBandwidth.Value)
 				*channel <- point
 				point.Network = netBack
 			}
