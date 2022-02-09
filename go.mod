@@ -18,7 +18,7 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/segmentio/kafka-go v0.4.25
+	github.com/segmentio/kafka-go v0.4.28
 	github.com/takama/daemon v1.0.0
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/fasthttp v1.31.0
