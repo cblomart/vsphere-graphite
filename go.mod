@@ -23,8 +23,7 @@ require (
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/valyala/fasthttp v1.31.0
 	github.com/vmware/govmomi v0.27.2
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/net v0.8.0
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/olivere/elastic.v5 v5.0.86
 )
